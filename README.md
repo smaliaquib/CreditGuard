@@ -1,7 +1,4 @@
-# CreditGuard
- 
-## Credit Card Default Prediction
-
+# CreditGuard: : Default Risk Predictor
 ## Project Overview
 
 This project implements an end-to-end machine learning pipeline for predicting credit card defaults using the "Default of Credit Card Clients" dataset. The pipeline includes data cleaning, preprocessing, feature engineering, model training with MLflow tracking, and model serving with A/B testing capabilities.
