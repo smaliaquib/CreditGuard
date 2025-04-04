@@ -31,7 +31,6 @@ resources:
         project_name: "credit-default"
 
       tasks:
-
         - task_key: "preprocessing"
           existing_cluster_id: 0404-143834-d1hokohr
           spark_python_task:
