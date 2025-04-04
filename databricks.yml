@@ -1,0 +1,109 @@
+# This is a Databricks asset bundle definition for CreditGuard.
+# The Databricks extension requires databricks.yml configuration file.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+
+bundle:
+  name: CreditGuard
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://adb-2343411687447265.5.azuredatabricks.net
+
+  ## Optionally, there could be 'staging' or 'prod' targets here.
+  #
+  # prod:
+  #   workspace:
+  #     host: https://adb-2343411687447265.5.azuredatabricks.net
+
+variables:
+  # root_path:
+  #   description: root_path for the bundle files
+  #   default: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/files
+  git_sha:
+    description: git_sha
+    default: 1aa0037267af83a7685bea002a332739563fa3c9
+
+resources:
+  jobs:
+    credit-default:
+      name: credit-default-workflow
+      tags:
+        project_name: "credit-default"
+
+      tasks:
+
+        - task_key: "preprocessing"
+          existing_cluster_id: 0404-143834-d1hokohr
+          spark_python_task:
+            python_file: "/Workspace/Users/ak36804n@pace.edu/CreditGuard/workflow/preprocess.py"
+            parameters:
+              - "--root_path"
+              - ".."
+          libraries:
+           - whl: ./dist/*.whl
+
+        - task_key: if_refreshed
+          condition_task:
+            op: "EQUAL_TO"
+            left: "{{tasks.preprocessing.values.refreshed}}"
+            right: "1"
+          depends_on:
+            - task_key: "preprocessing"
+
+        - task_key: "train_model"
+          depends_on:
+            - task_key: "if_refreshed"
+              outcome: "true"
+          existing_cluster_id: 0404-143834-d1hokohr
+          spark_python_task:
+            python_file: "/Workspace/Users/ak36804n@pace.edu/CreditGuard/workflow/train_model.py"
+            parameters:
+              - "--root_path"
+              - ".."
+              - "--git_sha"
+              - ${var.git_sha}
+              - "--job_run_id"
+              - "{{job.id}}"
+          libraries:
+            - whl: ./dist/*.whl
+
+        - task_key: "evaluate_model"
+          depends_on:
+            - task_key: "train_model"
+          existing_cluster_id: 0404-143834-d1hokohr
+          spark_python_task:
+            python_file: "/Workspace/Users/ak36804n@pace.edu/CreditGuard/workflow/evaluate_model.py"
+            parameters:
+              - "--root_path"
+              - ".."
+              - "--new_model_uri"
+              - "{{tasks.train_model.values.new_model_uri}}"
+              - "--job_run_id"
+              - "{{job.id}}"
+              - "--git_sha"
+              - ${var.git_sha}
+          libraries:
+            - whl: ./dist/*.whl
+
+        - task_key: model_update
+          condition_task:
+            op: "EQUAL_TO"
+            left: "{{tasks.evaluate_model.values.model_update}}"
+            right: "1"
+          depends_on:
+            - task_key: "evaluate_model"
+        - task_key: "deploy_model"
+          depends_on:
+            - task_key: "model_update"
+              outcome: "true"
+          existing_cluster_id: 0404-143834-d1hokohr
+          spark_python_task:
+            python_file: "/Workspace/Users/ak36804n@pace.edu/CreditGuard/workflow/deploy_model.py"
+            parameters:
+              - "--root_path"
+              - ".."
+          libraries:
+            - whl: ./dist/*.whl
