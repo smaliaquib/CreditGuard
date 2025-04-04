@@ -9,7 +9,8 @@ repos:
       - id: check-toml
       - id: check-yaml
       - id: end-of-file-fixer
-      --allow-missing-config
+      exclude: ^tests/resources/
+      # --allow-missing-config
       # exclude: ^(notebook/.*\.ipynb|\.env_sample)$
   #     - id: trailing-whitespace
   # - repo: https://github.com/astral-sh/ruff-pre-commit
