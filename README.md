@@ -17,16 +17,6 @@ The automated deployment pipeline ensures continuous integration and delivery of
 
 ![Deployment Pipeline](deploy_pipeline.png)
 
-### Pipeline Stages
-
-1. **Preprocessing** (`_0r.low/preprocess.py`) - Data cleaning and preparation
-2. **Refresh Check** (`if_refreshed`) - Conditional execution based on data updates
-3. **Model Training** (`_0r.low/train_model.py`) - Train ML model with new data
-4. **Model Evaluation** (`_low/evaluate_model.py`) - Validate model performance
-5. **Model Update** (`[--update]`) - Update model registry
-6. **Model Deployment** (`_low/deploy_model.py`) - Deploy to serving endpoint
-
-All stages are orchestrated by **Khan, Ali's Cluster** and track execution status (Succeeded/Failed).
 
 ## Project Structure
 
@@ -125,7 +115,3 @@ The project uses a centralized configuration file (`project_config.yml`) to mana
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
-
-## Author
-
-**Khan, Ali's Cluster** - Databricks Implementation
